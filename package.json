@@ -14,6 +14,8 @@
     "start:prod": "node dist/main",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
+    "sls:dev": "pnpm build --webpack && sls offline --config serverless.dev.yml",
+    "sls:prod": "pnpm build --webpack && sls deploy",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",

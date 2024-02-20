@@ -1,0 +1,28 @@
+service: posts-service
+
+provider:
+  name: aws
+  region: sa-east-1 # --> usar la q sea necesaria
+  stage: dev
+
+package:
+  patterns:
+    - '!**/**' # <-- ignoro todo por defecto
+    - dist/main.js # <-- solamente incluye la carpeta dist para hacer el empaquetado
+
+functions:
+  main:
+    handler: dist/main.handler
+    url: true
+    runtime: nodejs20.x
+    timeout: 15
+    events:
+      - httpApi:
+          path: /
+          method: ANY
+      - httpApi:
+          path: '/{proxy+}'
+          method: ANY
+
+plugins:
+  - serverless-offline
