@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { Post } from './entities/post.entity';
 import { Model } from 'mongoose';
+
+import { Post } from './entities/post.entity';
 import { PostQueryFilter } from './dto/query-filter.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
-    private readonly configService: ConfigService,
     @InjectModel(Post.name)
     private readonly postsModel: Model<Post>,
   ) {}
@@ -30,9 +29,5 @@ export class PostsService {
     }
 
     return this.postsModel.find(query).lean();
-  }
-
-  async findOne(id: number) {
-    return `This action returns a #${id} post`;
   }
 }

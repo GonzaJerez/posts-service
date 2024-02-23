@@ -14,17 +14,8 @@ export class Post {
   @Prop()
   body: string;
 
-  @Prop({
-    type: 'string',
-  })
+  @Prop()
   author: string;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
-
-export class Author {
-  _id: string;
-  name: string;
-  last_name: string;
-  posts: string[];
-}

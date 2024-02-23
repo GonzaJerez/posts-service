@@ -19,6 +19,10 @@ functions:
     url: true
     runtime: nodejs20.x
     timeout: 15
+    environment:
+      MONGO_URI: ${env:MONGO_URI}
+      NODE_ENV: ${env:NODE_ENV}
+      SERVER_MODE: ${env:SERVER_MODE}
 
 plugins:
   - serverless-offline

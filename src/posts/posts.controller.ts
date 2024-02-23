@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostQueryFilter } from './dto/query-filter.dto';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -15,15 +15,5 @@ export class PostsController {
   @Get()
   findAll(@Query() filters: PostQueryFilter) {
     return this.postsService.findAll(filters);
-  }
-
-  // @Get('seed')
-  // seed() {
-  //   return this.postsService.seed();
-  // }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
   }
 }
