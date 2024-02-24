@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { IAuthor } from '../types/authors.types';
 
 @Schema({
   collection: 'posts',
@@ -14,8 +15,10 @@ export class Post {
   @Prop()
   body: string;
 
-  @Prop()
-  author: string;
+  @Prop({
+    type: String,
+  })
+  author: string | IAuthor;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

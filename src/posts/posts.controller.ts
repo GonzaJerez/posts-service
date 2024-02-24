@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { QueryFilterDto } from './dto/query-filter.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -12,7 +13,7 @@ export class PostsController {
   }
 
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  findAll(@Query() query: QueryFilterDto) {
+    return this.postsService.findAll(query);
   }
 }
