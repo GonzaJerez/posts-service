@@ -10,7 +10,7 @@ import { SchemaTypes, Types } from 'mongoose';
   },
 })
 export class Post {
-  @Prop({ type: SchemaTypes.ObjectId })
+  @Prop({ type: SchemaTypes.ObjectId, auto: true })
   _id: Types.ObjectId;
 
   @Prop()
