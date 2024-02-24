@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IAuthor } from '../types/authors.types';
+import { SchemaTypes, Types } from 'mongoose';
 
 @Schema({
   collection: 'posts',
@@ -9,6 +10,9 @@ import { IAuthor } from '../types/authors.types';
   },
 })
 export class Post {
+  @Prop({ type: SchemaTypes.ObjectId })
+  _id: Types.ObjectId;
+
   @Prop()
   title: string;
 

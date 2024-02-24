@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 
 import { Post } from './entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -23,9 +23,16 @@ export class PostsService {
   }
 
   async findAll(query: QueryFilterDto): Promise<Post[]> {
-    const { relations } = query;
+    const { relations, authors } = query;
 
-    let posts: Post[] = await this.postsModel.find().lean();
+    // Filter posts by authors ids from request
+    const idsAuthors = authors?.split(',');
+    const queryPosts: FilterQuery<Post> = {};
+    if (idsAuthors?.length > 0) {
+      queryPosts['author'] = { $in: idsAuthors };
+    }
+
+    let posts: Post[] = await this.postsModel.find(queryPosts).lean();
 
     if (relations?.includes('author')) {
       posts = await this.addAuthorsDataToPosts(posts);

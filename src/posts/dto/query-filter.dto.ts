@@ -1,3 +1,4 @@
 export class QueryFilterDto {
-  relations: string;
+  relations?: string;
+  authors?: string;
 }
