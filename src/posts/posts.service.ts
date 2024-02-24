@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 
@@ -49,11 +49,22 @@ export class PostsService {
     // Get data from authors microservice
     let authors: IAuthor[] = [];
     try {
-      authors = await fetch(
+      const resp: {
+        statusCode?: number;
+        message?: string;
+        authors?: IAuthor[];
+      } = await fetch(
         `${this.configService.get(
           'AUTHORS_API_URL',
         )}?authors=${authorsToGetData.join(',')}`,
       ).then((res) => res.json());
+
+      if (!resp.authors)
+        throw new InternalServerErrorException(
+          'Error on get data from authors microservice',
+        );
+
+      authors = resp.authors;
     } catch (error) {
       console.log(error);
     }

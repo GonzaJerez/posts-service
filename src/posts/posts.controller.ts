@@ -13,7 +13,8 @@ export class PostsController {
   }
 
   @Get()
-  findAll(@Query() query: QueryFilterDto) {
-    return this.postsService.findAll(query);
+  async findAll(@Query() query: QueryFilterDto) {
+    const posts = await this.postsService.findAll(query);
+    return { posts };
   }
 }
