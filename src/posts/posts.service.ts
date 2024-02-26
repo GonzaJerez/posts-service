@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 
 import { Post } from './entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -49,15 +50,20 @@ export class PostsService {
     // Get data from authors microservice
     let authors: IAuthor[] = [];
     try {
-      const resp: {
+      let resp: {
         statusCode?: number;
         message?: string;
         authors?: IAuthor[];
-      } = await fetch(
-        `${this.configService.get(
-          'AUTHORS_API_URL',
-        )}?authors=${authorsToGetData.join(',')}`,
-      ).then((res) => res.json());
+      };
+      if (this.configService.get('NODE_ENV') === 'prod') {
+        resp = await this.invokeLambda(`authors=${authorsToGetData.join(',')}`);
+      } else {
+        resp = await fetch(
+          `${this.configService.get(
+            'AUTHORS_API_URL',
+          )}?authors=${authorsToGetData.join(',')}`,
+        ).then((res) => res.json());
+      }
 
       if (!resp.authors)
         throw new InternalServerErrorException(
@@ -83,5 +89,32 @@ export class PostsService {
     });
 
     return postsWithAuthors;
+  }
+
+  private async invokeLambda(queryString = '') {
+    const client = new LambdaClient();
+    const command = new InvokeCommand({
+      FunctionName: this.configService.get('AUTHORS_FUNCTION_NAME'),
+      Payload: JSON.stringify({
+        version: '2.0',
+        routeKey: '$default',
+        rawPath: '/authors',
+        rawQueryString: queryString,
+        headers: {},
+        requestContext: {
+          http: {
+            method: 'GET',
+            path: `/authors?${queryString}`,
+            protocol: 'HTTP/1.1',
+          },
+        },
+      }),
+      InvocationType: 'RequestResponse',
+    });
+
+    const resp = await client.send(command);
+    const data = Buffer.from(resp.Payload).toString();
+    const dataParsed = JSON.parse(data);
+    return JSON.parse(dataParsed.body);
   }
 }

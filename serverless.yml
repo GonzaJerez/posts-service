@@ -4,21 +4,29 @@ provider:
   name: aws
   region: sa-east-1
   stage: prod
+  httpApi:
+    id: ${env:API_GATEWAY_ID}
 
 useDotenv: true
 
 package:
   patterns:
     - '!**/**'
-    - dist/main.js
+    - dist/**
 
 functions:
   main:
     handler: dist/main.handler
     name: posts-service
-    url: true
     runtime: nodejs20.x
     timeout: 15
+    events:
+      - httpApi:
+          path: '/posts'
+          method: ANY
+      - httpApi:
+          path: '/posts/{proxy+}'
+          method: ANY
     environment:
       MONGO_URI: ${env:MONGO_URI}
       NODE_ENV: ${env:NODE_ENV}
