@@ -7,8 +7,6 @@ services:
     restart: always
     ports:
       - '${DB_PORT}:27017'
-    environment:
-      MONGO_INITDB_DATABASE: ${DB_NAME}
     volumes:
       - posts:/mongo:/data/db
 

@@ -6,5 +6,5 @@ export async function httpServer() {
   const app = await NestFactory.create(AppModule);
 
   const config = app.get(ConfigService);
-  await app.listen(config.get('HTTP_PORT'));
+  await app.listen(config.get('HTTP_PORT') || 3000);
 }

@@ -59,7 +59,7 @@ export class PostsService {
         resp = await this.invokeLambda(`authors=${authorsToGetData.join(',')}`);
       } else {
         resp = await fetch(
-          `${this.configService.get(
+          `${this.configService.getOrThrow(
             'AUTHORS_API_URL',
           )}?authors=${authorsToGetData.join(',')}`,
         ).then((res) => res.json());
@@ -92,14 +92,24 @@ export class PostsService {
   }
 
   private async invokeLambda(queryString = '') {
+    const queryStringParameters: Record<string, string> = {};
+
+    const params = queryString.split('&');
+    for (const param of params) {
+      const [key, value] = param.split('=');
+      queryStringParameters[key] = value;
+    }
+
     const client = new LambdaClient();
     const command = new InvokeCommand({
-      FunctionName: this.configService.get('AUTHORS_FUNCTION_NAME'),
+      FunctionName: this.configService.getOrThrow('AUTHORS_FUNCTION_NAME'),
       Payload: JSON.stringify({
         version: '2.0',
         routeKey: '$default',
+        stage: 'prod',
         rawPath: '/authors',
         rawQueryString: queryString,
+        queryStringParameters,
         headers: {},
         requestContext: {
           http: {
