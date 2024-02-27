@@ -36,7 +36,7 @@ Renombrar archivo ".env.example" a ".env" y configurar las variables de entorno 
 
 #### API Gateway
 
-Antes de hacer el despliegue del servicio tiene que haber creada una Api Gateway simple, sin ninguna ruta ni conexiones a ninguna lambda y con el stage "$default".
+Antes de hacer el despliegue del servicio hay que crear una Api Gateway simple, al crearla hacerlo sin ninguna ruta ni conexiones a ninguna lambda y con el stage "$default". Las rutas se crearán automáticamente al desplegar esta la lambda.
 
 Tengo que copiarme el id de la api gateway para agregarlo a las variables de entorno.
 
@@ -50,7 +50,13 @@ Crear archivo `.env.prod` y configurar las variables de entorno necesarias para 
 - API_GATEWAY_ID= (id de api gateway creado)
 - AUTHORS_FUNCTION_NAME= (Si ya se sabe el nombre de la lambda de authors agregarlo en este archivo, sino configurarlo despues en consola de aws)
 
-> Una vez desplegado este servicio configurar los permisos de la lambda de "authors" para que esta lambda pueda ejecutarla.
+#### Permisos
+
+Una vez desplegado este servicio configurar los permisos de la lambda para que otras lambdas puedan invocarla.
+
+Para esto ir a "Configuration" -> "Permissions" -> "Resource-based policy statements" -> "Add permission" -> Se le asigna nombre al permiso, se agrega la arn **del rol de la lambda que haria la invocacion a esta _(en este caso la arn del permiso de la lambda de authors)_**, y selecciono el permiso al que se le da acceso: **lambda:invokeFunction**.
+
+De esta forma esta lambda puede ser invokada por cualquier lambda que tenga el rol seleccionado (en este caso la lambda de authors)
 
 #### Deploy
 
