@@ -23,6 +23,9 @@ export class Post {
     type: String,
   })
   author: string | IAuthor;
+
+  @Prop()
+  image_url: string;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

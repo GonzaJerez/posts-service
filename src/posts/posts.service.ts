@@ -8,6 +8,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { ConfigService } from '@nestjs/config';
 import { IAuthor } from './types/authors.types';
 import { QueryFilterDto } from './dto/query-filter.dto';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class PostsService {
@@ -17,8 +18,13 @@ export class PostsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async create(body: CreatePostDto) {
+  async create(body: CreatePostDto, file: Express.Multer.File) {
     const post = new this.postsModel(body);
+
+    if (file) {
+      const { url } = await this.uploadImage(file);
+      post.image_url = url;
+    }
 
     return this.postsModel.create(post);
   }
@@ -126,5 +132,39 @@ export class PostsService {
     const data = Buffer.from(resp.Payload).toString();
     const dataParsed = JSON.parse(data);
     return JSON.parse(dataParsed.body);
+  }
+
+  private async uploadImage(file: Express.Multer.File) {
+    const client = new S3Client({
+      region: this.configService.get('AWS_BUCKET_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get('AWS_S3_ACCESS_KEY'),
+        secretAccessKey: this.configService.get('AWS_S3_SECRET_KEY'),
+      },
+    });
+
+    // Remove spaces from file name to url
+    const formatedFileName = file.originalname.replace(/\s/g, '-');
+
+    const command = new PutObjectCommand({
+      Bucket: this.configService.get('AWS_BUCKET_NAME'),
+      Key: formatedFileName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    });
+
+    const uploadResponse = await client.send(command);
+
+    // Generate url because s3 not generate in response
+    const url = `https://${this.configService.get(
+      'AWS_BUCKET_NAME',
+    )}.s3.${this.configService.get(
+      'AWS_BUCKET_REGION',
+    )}.amazonaws.com/${formatedFileName}`;
+
+    return {
+      ...uploadResponse,
+      url,
+    };
   }
 }
