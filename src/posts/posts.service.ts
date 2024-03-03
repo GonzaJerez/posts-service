@@ -19,7 +19,7 @@ export class PostsService {
   ) {}
 
   async create(body: CreatePostDto, file: Express.Multer.File) {
-    const post = new this.postsModel(body);
+    const post = new this.postsModel({ ...body, author: body.id_author });
 
     if (file) {
       const { url } = await this.uploadImage(file);
@@ -137,10 +137,6 @@ export class PostsService {
   private async uploadImage(file: Express.Multer.File) {
     const client = new S3Client({
       region: this.configService.get('AWS_BUCKET_REGION'),
-      credentials: {
-        accessKeyId: this.configService.get('AWS_S3_ACCESS_KEY'),
-        secretAccessKey: this.configService.get('AWS_S3_SECRET_KEY'),
-      },
     });
 
     // Remove spaces from file name to url
@@ -154,6 +150,7 @@ export class PostsService {
     });
 
     const uploadResponse = await client.send(command);
+    console.log({ uploadResponse });
 
     // Generate url because s3 not generate in response
     const url = `https://${this.configService.get(
