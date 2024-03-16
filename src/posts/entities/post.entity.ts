@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IAuthor } from '../types/authors.types';
 import { SchemaTypes, Types } from 'mongoose';
+import { Author } from 'src/authors/entities/author.entity';
 
 @Schema({
   collection: 'posts',
@@ -20,9 +20,10 @@ export class Post {
   body: string;
 
   @Prop({
-    type: String,
+    type: Types.ObjectId,
+    ref: 'Author',
   })
-  author: string | IAuthor;
+  author: Author;
 
   @Prop()
   image_url: string;

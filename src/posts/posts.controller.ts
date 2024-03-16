@@ -6,13 +6,11 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
-  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { QueryFilterDto } from './dto/query-filter.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
@@ -39,8 +37,8 @@ export class PostsController {
   }
 
   @Get()
-  async findAll(@Query() query: QueryFilterDto) {
-    const posts = await this.postsService.findAll(query);
+  async findAll() {
+    const posts = await this.postsService.findAll();
     return { posts };
   }
 }

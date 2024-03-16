@@ -1,14 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { Model } from 'mongoose';
 
 import { Post } from './entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { ConfigService } from '@nestjs/config';
-import { IAuthor } from './types/authors.types';
-import { QueryFilterDto } from './dto/query-filter.dto';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Author } from 'src/authors/entities/author.entity';
+import { AuthorsService } from 'src/authors/authors.service';
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
 @Injectable()
 export class PostsService {
@@ -16,6 +16,7 @@ export class PostsService {
     @InjectModel(Post.name)
     private readonly postsModel: Model<Post>,
     private readonly configService: ConfigService,
+    private readonly authorsService: AuthorsService,
   ) {}
 
   async create(body: CreatePostDto, file: Express.Multer.File) {
@@ -26,112 +27,15 @@ export class PostsService {
       post.image_url = url;
     }
 
-    return this.postsModel.create(post);
+    const postCreated = await this.postsModel.create(post);
+
+    await this.sendMessageToAuthorsQueue(post);
+
+    return postCreated.populate('author');
   }
 
-  async findAll(query: QueryFilterDto): Promise<Post[]> {
-    const { relations, authors } = query;
-
-    // Filter posts by authors ids from request
-    const idsAuthors = authors?.split(',');
-    const queryPosts: FilterQuery<Post> = {};
-    if (idsAuthors?.length > 0) {
-      queryPosts['author'] = { $in: idsAuthors };
-    }
-
-    let posts: Post[] = await this.postsModel.find(queryPosts).lean();
-
-    if (relations?.includes('author')) {
-      posts = await this.addAuthorsDataToPosts(posts);
-    }
-
-    return posts;
-  }
-
-  private async addAuthorsDataToPosts(posts: Post[]) {
-    // Get authors ids to fitler request
-    const authorsFromPosts = new Set(posts.map((post) => post.author));
-    const authorsToGetData = Array.from(authorsFromPosts);
-
-    // Get data from authors microservice
-    let authors: IAuthor[] = [];
-    try {
-      let resp: {
-        statusCode?: number;
-        message?: string;
-        authors?: IAuthor[];
-      };
-      if (this.configService.get('NODE_ENV') === 'prod') {
-        resp = await this.invokeLambda(`authors=${authorsToGetData.join(',')}`);
-      } else {
-        resp = await fetch(
-          `${this.configService.getOrThrow(
-            'AUTHORS_API_URL',
-          )}?authors=${authorsToGetData.join(',')}`,
-        ).then((res) => res.json());
-      }
-
-      if (!resp.authors)
-        throw new InternalServerErrorException(
-          'Error on get data from authors microservice',
-        );
-
-      authors = resp.authors;
-    } catch (error) {
-      console.log(error);
-    }
-
-    // If not recover data from authors microservice just return posts
-    if (authors.length === 0) return posts;
-
-    // Merge posts with their authors
-    const postsWithAuthors: Post[] = posts.map((post) => {
-      const author = authors.find((author) => author._id === post.author);
-      delete post.author;
-      return {
-        ...post,
-        author,
-      };
-    });
-
-    return postsWithAuthors;
-  }
-
-  private async invokeLambda(queryString = '') {
-    const queryStringParameters: Record<string, string> = {};
-
-    const params = queryString.split('&');
-    for (const param of params) {
-      const [key, value] = param.split('=');
-      queryStringParameters[key] = value;
-    }
-
-    const client = new LambdaClient();
-    const command = new InvokeCommand({
-      FunctionName: this.configService.getOrThrow('AUTHORS_FUNCTION_NAME'),
-      Payload: JSON.stringify({
-        version: '2.0',
-        routeKey: '$default',
-        stage: 'prod',
-        rawPath: '/authors',
-        rawQueryString: queryString,
-        queryStringParameters,
-        headers: {},
-        requestContext: {
-          http: {
-            method: 'GET',
-            path: `/authors?${queryString}`,
-            protocol: 'HTTP/1.1',
-          },
-        },
-      }),
-      InvocationType: 'RequestResponse',
-    });
-
-    const resp = await client.send(command);
-    const data = Buffer.from(resp.Payload).toString();
-    const dataParsed = JSON.parse(data);
-    return JSON.parse(dataParsed.body);
+  async findAll(): Promise<Post[]> {
+    return this.postsModel.find().lean().populate('author');
   }
 
   private async uploadImage(file: Express.Multer.File) {
@@ -150,7 +54,6 @@ export class PostsService {
     });
 
     const uploadResponse = await client.send(command);
-    console.log({ uploadResponse });
 
     // Generate url because s3 not generate in response
     const url = `https://${this.configService.get(
@@ -163,5 +66,29 @@ export class PostsService {
       ...uploadResponse,
       url,
     };
+  }
+
+  handleMessage(author: Author) {
+    console.log({ author });
+
+    return this.authorsService.putAuthor(author);
+  }
+
+  async sendMessageToAuthorsQueue(post: Post) {
+    const client = new SQSClient({});
+    const command = new SendMessageCommand({
+      QueueUrl: this.configService.get('AUTHORS_QUEUE_URL'),
+      MessageAttributes: {
+        operation: {
+          DataType: 'String',
+          StringValue: 'CREATE',
+        },
+      },
+      MessageBody: JSON.stringify(post),
+      MessageGroupId: post._id.toString(),
+      MessageDeduplicationId: post._id.toString(),
+    });
+
+    await client.send(command);
   }
 }
