@@ -69,8 +69,6 @@ export class PostsService {
   }
 
   handleMessage(author: Author) {
-    console.log({ author });
-
     return this.authorsService.putAuthor(author);
   }
 
