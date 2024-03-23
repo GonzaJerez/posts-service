@@ -24,6 +24,10 @@ Un bucket S3 de destino. Este bucket debe tener acceso publico (Habilitar acceso
 
 Una cola donde se reciban todos los eventos que le interesan a este servicio. Para el ejemplo se configuro un SQS de tipo "fifo".
 
+## SNS
+
+Un topic donde se publicaran los eventos que dispare este servicio.
+
 ### API Gateway (prod)
 
 Antes de hacer el despliegue del servicio hay que crear una Api Gateway simple, al crearla hacerlo sin ninguna ruta ni conexiones a ninguna lambda y con el stage "$default". Las rutas se crearán automáticamente al desplegar esta la lambda.
@@ -101,3 +105,11 @@ Crearle un permiso para que esta lambda pueda emitir eventos a ciertas colas de 
 Para esto tengo que entrar al rol de la lambda ("Configuration" -> "Execution role") y agregarle una politica.
 
 Esta politica tiene que tener el permiso _sqs:SendMessage_ y apuntar a la cola correspondiente (en este caso al SQS de authors)
+
+**Enviar eventos a SNS topic**
+
+Crearle un permiso para que esta lambda pueda emitir eventos a ciertos topics de SNS.
+
+Para esto tengo que entrar al rol de la lambda ("Configuration" -> "Execution role") y agregarle una politica.
+
+Esta politica tiene que tener el permiso _sns:Publish_ y apuntar al topic correspondiente (en este caso al de posts)
