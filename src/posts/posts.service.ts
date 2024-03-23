@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Author } from 'src/authors/entities/author.entity';
 import { AuthorsService } from 'src/authors/authors.service';
-import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
+import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 
 @Injectable()
 export class PostsService {
@@ -29,9 +29,11 @@ export class PostsService {
 
     const postCreated = await this.postsModel.create(post);
 
-    await this.sendMessageToAuthorsQueue(post);
+    const postCreatedWithAuthorData = await postCreated.populate('author');
 
-    return postCreated.populate('author');
+    await this.publishPost(postCreatedWithAuthorData);
+
+    return postCreatedWithAuthorData;
   }
 
   async findAll(): Promise<Post[]> {
@@ -72,19 +74,17 @@ export class PostsService {
     return this.authorsService.putAuthor(author);
   }
 
-  async sendMessageToAuthorsQueue(post: Post) {
-    const client = new SQSClient({});
-    const command = new SendMessageCommand({
-      QueueUrl: this.configService.get('AUTHORS_QUEUE_URL'),
+  async publishPost(post: Post) {
+    const client = new SNSClient({});
+    const command = new PublishCommand({
+      Message: JSON.stringify(post),
+      TopicArn: this.configService.get('SNS_TOPIC_ARN'),
       MessageAttributes: {
         operation: {
           DataType: 'String',
           StringValue: 'CREATE',
         },
       },
-      MessageBody: JSON.stringify(post),
-      MessageGroupId: post._id.toString(),
-      MessageDeduplicationId: post._id.toString(),
     });
 
     await client.send(command);
