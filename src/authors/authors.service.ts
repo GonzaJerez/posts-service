@@ -11,9 +11,11 @@ export class AuthorsService {
     private readonly authorsModel: Model<Post>,
   ) {}
 
-  async putAuthor(dataAuthor: Author) {
+  async putAuthors(dataAuthor: Author) {
+    if (!dataAuthor._id) return;
+
     let author = await this.authorsModel.findByIdAndUpdate(
-      dataAuthor._id,
+      dataAuthor?._id,
       dataAuthor,
       {
         new: true,

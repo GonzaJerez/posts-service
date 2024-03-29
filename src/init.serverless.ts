@@ -27,11 +27,14 @@ export const handler: Handler = async (
 
   // Inicializar lambda consumer sqs
   if (event.Records) {
-    const handler = cachedServer.get(PostsService);
-    const { body } = event.Records[0];
-    console.log({ body });
+    console.log(event);
 
-    return handler.handleMessage(JSON.parse(body) as Author);
+    const handler = cachedServer.get(PostsService);
+    const body = JSON.parse(event.Records[0].body ?? '{}');
+    const authors = JSON.parse(body.Message ?? '{}');
+    console.log({ authors });
+
+    return handler.handleMessage(authors as Author[]);
   }
 
   // Inicializar lambda http

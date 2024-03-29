@@ -70,8 +70,10 @@ export class PostsService {
     };
   }
 
-  handleMessage(author: Author) {
-    return this.authorsService.putAuthor(author);
+  async handleMessage(authors: Author[]) {
+    for (const author of authors) {
+      await this.authorsService.putAuthors(author);
+    }
   }
 
   async publishPost(post: Post) {
