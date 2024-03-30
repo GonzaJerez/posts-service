@@ -39,7 +39,7 @@ export class PostsController {
     )
     file: Express.Multer.File,
   ) {
-    return this.postsService.create({ ...body, id_author: user._id }, file);
+    return this.postsService.create(body, file, user);
   }
 
   @Get()

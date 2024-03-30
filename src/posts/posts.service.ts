@@ -9,6 +9,7 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Author } from 'src/authors/entities/author.entity';
 import { AuthorsService } from 'src/authors/authors.service';
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
+import { IAuthUser } from './types/auth-user.interface';
 
 @Injectable()
 export class PostsService {
@@ -19,8 +20,12 @@ export class PostsService {
     private readonly authorsService: AuthorsService,
   ) {}
 
-  async create(body: CreatePostDto, file: Express.Multer.File) {
-    const post = new this.postsModel({ ...body, author: body.id_author });
+  async create(
+    body: CreatePostDto,
+    file: Express.Multer.File,
+    user: IAuthUser,
+  ) {
+    const post = new this.postsModel({ ...body, author: user._id });
 
     if (file) {
       const { url } = await this.uploadImage(file);
