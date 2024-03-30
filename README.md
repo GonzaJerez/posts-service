@@ -71,8 +71,9 @@ Crear archivo `.env.prod` y configurar las variables de entorno necesarias para 
 
 - MONGO_URI=... (string de conexion a base de datos de MongoDB con su nombre de usuario y contraseña)
 - API_GATEWAY_ID= (id de api gateway creado)
+- SNS_TOPIC_ARN= (ARN del topic donde se van a publicar los eventos que emita este servicio)
 - SQS_QUEUE_ARN= (arn de la cola de sqs que le emite eventos a esta lambda)
-- AUTHORS_QUEUE_URL= (URL de la queue del servicio de authors para poder enviarle mensajes)
+- AUTH_FUNCTION_NAME= (nombre de la funcion de autenticacion)
 - AWS_BUCKET_NAME= (nombre del bucket de s3 al que se van a subir los archivos)
 - AWS_BUCKET_REGION= (region de aws donde se encuentra el bucket s3. Ej sa-east-1)
 
@@ -82,13 +83,13 @@ Crear archivo `.env.prod` y configurar las variables de entorno necesarias para 
 
 #### Permisos
 
-**Permitir invocaciones de lambdas**
+**Invocar lambdas**
 
-Una vez desplegado este servicio configurar los permisos de la lambda para que otras lambdas puedan invocarla.
+Una vez desplegado este servicio configurar los permisos de la lambda para que pueda invocar otras lambdas.
 
-Para esto ir a "Configuration" -> "Permissions" -> "Resource-based policy statements" -> "Add permission" -> Se le asigna nombre al permiso, se agrega la arn **del rol de la lambda que haria la invocacion a esta _(en este caso la arn del permiso de la lambda de authors)_**, y selecciono el permiso al que se le da acceso: **lambda:invokeFunction**.
+Para esto tengo que entrar al rol de la lambda ("Configuration" -> "Execution role") y agregarle una politica.
 
-De esta forma esta lambda puede ser invocada por cualquier lambda que tenga el rol seleccionado (en este caso la lambda de authors)
+Esta politica tiene que tener el permiso _lambda:invokeFunction_ y apuntar a la funcion correspondiente.
 
 **Subir archivos a bucket S3**
 
@@ -96,15 +97,7 @@ Crearle un permiso para que esta lambda pueda subir archivos a S3.
 
 Para esto tengo que entrar al rol de la lambda ("Configuration" -> "Execution role") y agregarle una politica.
 
-Esta politica tiene que tener el permiso _putObject_ y apuntar al bucket correspondiente.
-
-**Enviar eventos a SQS**
-
-Crearle un permiso para que esta lambda pueda emitir eventos a ciertas colas de SQS.
-
-Para esto tengo que entrar al rol de la lambda ("Configuration" -> "Execution role") y agregarle una politica.
-
-Esta politica tiene que tener el permiso _sqs:SendMessage_ y apuntar a la cola correspondiente (en este caso al SQS de authors)
+Esta politica tiene que tener el permiso _s3:PutObject_ y apuntar al bucket correspondiente.
 
 **Enviar eventos a SNS topic**
 

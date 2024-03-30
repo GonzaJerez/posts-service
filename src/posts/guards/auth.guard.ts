@@ -16,8 +16,6 @@ export class AuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const req = context.switchToHttp().getRequest();
-    // const token = req.headers.authorization;
-    // console.log({ token });
 
     const client = new LambdaClient();
     const command = new InvokeCommand({
@@ -45,9 +43,7 @@ export class AuthGuard implements CanActivate {
       .then((res) => {
         const data = Buffer.from(res.Payload).toString();
         const dataParsed = JSON.parse(data);
-        console.log({ dataParsed });
         const body = JSON.parse(dataParsed.body);
-        console.log({ body });
 
         const user = body?.user;
         const token = body?.token;
