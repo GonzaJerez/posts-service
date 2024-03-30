@@ -14,6 +14,8 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from './guards/auth.guard';
+import { IAuthUser } from './types/auth-user.interface';
+import { GetUser } from './decorators/get-user.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -24,6 +26,7 @@ export class PostsController {
   @UseInterceptors(FileInterceptor('image'))
   create(
     @Body() body: CreatePostDto,
+    @GetUser() user: IAuthUser,
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: false,
@@ -36,7 +39,7 @@ export class PostsController {
     )
     file: Express.Multer.File,
   ) {
-    return this.postsService.create(body, file);
+    return this.postsService.create({ ...body, id_author: user._id }, file);
   }
 
   @Get()

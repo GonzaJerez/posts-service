@@ -35,6 +35,7 @@ functions:
       AWS_BUCKET_NAME: ${env:AWS_BUCKET_NAME}
       AWS_BUCKET_REGION: ${env:AWS_BUCKET_REGION}
       SNS_TOPIC_ARN: ${env:SNS_TOPIC_ARN}
+      AUTH_FUNCTION_NAME: ${env:AUTH_FUNCTION_NAME}
 
 plugins:
   - serverless-offline
