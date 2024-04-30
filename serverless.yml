@@ -28,9 +28,9 @@ functions:
           path: '/posts/{proxy+}'
           method: ANY
     environment:
-      MONGO_URI: ${env:MONGO_URI}
       NODE_ENV: prod
       SERVER_MODE: serverless
+      MONGO_URI: ${env:MONGO_URI}
       AUTHORS_FUNCTION_NAME: ${env:AUTHORS_FUNCTION_NAME}
       AWS_BUCKET_NAME: ${env:AWS_BUCKET_NAME}
       AWS_BUCKET_REGION: ${env:AWS_BUCKET_REGION}

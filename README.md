@@ -61,11 +61,11 @@ Renombrar archivo ".env.example" a ".env" y configurar las variables de entorno 
 
 Crear archivo `.env.prod` y configurar las variables de entorno necesarias para produccion
 
-- MONGO_URI=... (string de conexion a base de datos de MongoDB con su nombre de usuario y contraseña)
-- API_GATEWAY_ID= (id de api gateway creado)
-- AUTHORS_FUNCTION_NAME= (Si ya se sabe el nombre de la lambda de authors agregarlo en este archivo, sino configurarlo despues en consola de aws)
-- AWS_BUCKET_NAME= (nombre del bucket de s3 al que se van a subir los archivos)
-- AWS_BUCKET_REGION= (region de aws donde se encuentra el bucket s3. Ej sa-east-1)
+- MONGO_URI= string de conexion a base de datos de MongoDB con su nombre de usuario y contraseña
+- API_GATEWAY_ID= id de api gateway creado
+- AUTHORS_FUNCTION_NAME= Si ya se sabe el nombre de la lambda de authors agregarlo en este archivo, sino configurarlo despues en consola de aws
+- AWS_BUCKET_NAME= nombre del bucket de s3 al que se van a subir los archivos
+- AWS_BUCKET_REGION= region de aws donde se encuentra el bucket s3. Ej sa-east-1
 
 #### Deploy
 
