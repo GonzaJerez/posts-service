@@ -12,7 +12,7 @@ Asegurarse de tener instalado en su sistema:
 
 ### AWS CLI (prod)
 
-> [INFO]
+> ![INFO]
 > Asegurarse de tener instalado el cli de AWS, si no lo tiene instalado descarguelo y configure un usuario para usar el CLI local
 > Para utilizar los distintos servicios de aws como la invocación de lambdas o subida de imagenes a S3 pero corriendo el proyecto de forma local, este usuario de AWS CLI debe tener por lo menos esos permisos
 
@@ -80,11 +80,15 @@ Crear archivo `.env.prod` y configurar las variables de entorno necesarias para 
 
 **Permitir invocaciones de lambdas**
 
-Una vez desplegado este servicio configurar los permisos de la lambda para que otras lambdas puedan invocarla.
+Una vez desplegado este servicio configurar los permisos de la lambda para que otras lambdas puedan invocarla. Esto puede hacerse de 2 maneras, dandole permisos a las lambdas para que puedan invocar a otras o diciendole a las lambdas que otras funciones pueden invocarla.
 
-Para esto ir a "Configuration" -> "Permissions" -> "Resource-based policy statements" -> "Add permission" -> Se le asigna nombre al permiso, se agrega la arn **del rol de la lambda que haria la invocacion a esta _(en este caso la arn del permiso de la lambda de authors)_**, y selecciono el permiso al que se le da acceso: **lambda:invokeFunction**.
+Para la primera opción ir a "Configuration" -> "Permissions" -> "Execution role" -> "Role name" -> Selecciono el rol para ir a la configuración del mismo -> agrego la politica lambda:invokeFunction al rol y especifico las funciones lambda que puede invocar.
 
-De esta forma esta lambda puede ser invocada por cualquier lambda que tenga el rol seleccionado (en este caso la lambda de authors)
+De esta forma esta lambda ya puede invocar otras lambdas.
+
+Para la segunda opción ir a "Configuration" -> "Permissions" -> "Resource-based policy statements" -> "Add permission" -> Se le asigna nombre al permiso, se agrega la arn del rol de la lambda que haria la invocacion a esta (en este caso la arn del permiso de la lambda de authors), y selecciono el permiso al que se le da acceso: lambda:invokeFunction.
+
+De esta forma esta lambda puede ser invokada por cualquier lambda que tenga el rol seleccionado (en este caso la lambda de authors)
 
 **Subir archivos a bucket S3**
 
