@@ -12,7 +12,7 @@ Asegurarse de tener instalado en su sistema:
 
 ### AWS CLI (prod)
 
-> ![INFO]
+> [!INFO]
 > Asegurarse de tener instalado el cli de AWS, si no lo tiene instalado descarguelo y configure un usuario para usar el CLI local
 > Para utilizar los distintos servicios de aws como la invocación de lambdas o subida de imagenes a S3 pero corriendo el proyecto de forma local, este usuario de AWS CLI debe tener por lo menos esos permisos
 
@@ -52,7 +52,7 @@ Renombrar archivo ".env.example" a ".env" y configurar las variables de entorno 
 
     pnpm sls:dev
 
-> [WARNING]
+> [!WARNING]
 > En modo serverless en local no funciona la subida de archivos a S3
 
 ## Eliminar base de datos local
