@@ -12,7 +12,7 @@ Asegurarse de tener instalado en su sistema:
 
 ### AWS CLI (prod)
 
-> [INFO]
+> [!INFO]
 > Asegurarse de tener instalado el cli de AWS, si no lo tiene instalado descarguelo y configure un usuario para usar el CLI local
 > Para utilizar los distintos servicios de aws como la invocación de lambdas o subida de imagenes a S3 pero corriendo el proyecto de forma local, este usuario de AWS CLI debe tener por lo menos esos permisos
 
@@ -56,7 +56,7 @@ Renombrar archivo ".env.example" a ".env" y configurar las variables de entorno 
 
     pnpm sls:dev
 
-> [WARNING]
+> [!WARNING]
 > En modo serverless en local no funciona la subida de archivos a S3
 
 ## Eliminar base de datos local
@@ -69,26 +69,18 @@ Renombrar archivo ".env.example" a ".env" y configurar las variables de entorno 
 
 Crear archivo `.env.prod` y configurar las variables de entorno necesarias para produccion
 
-- MONGO_URI=... (string de conexion a base de datos de MongoDB con su nombre de usuario y contraseña)
-- API_GATEWAY_ID= (id de api gateway creado)
-- SQS_QUEUE_ARN= (arn de la cola de sqs que le emite eventos a esta lambda)
-- AUTHORS_QUEUE_URL= (URL de la queue del servicio de authors para poder enviarle mensajes)
-- AWS_BUCKET_NAME= (nombre del bucket de s3 al que se van a subir los archivos)
-- AWS_BUCKET_REGION= (region de aws donde se encuentra el bucket s3. Ej sa-east-1)
+- MONGO_URI= string de conexion a base de datos de MongoDB con su nombre de usuario y contraseña
+- API_GATEWAY_ID= id de api gateway creado
+- AWS_BUCKET_NAME= nombre del bucket de s3 al que se van a subir los archivos
+- AWS_BUCKET_REGION= region de aws donde se encuentra el bucket s3. Ej sa-east-1
+- SQS_QUEUE_ARN= arn de la cola de sqs que va a estar escuchando esta lambda
+- SNS_TOPIC_ARN= arn del topic donde este servicio va a publicar eventos
 
 #### Deploy
 
     pnpm sls:prod
 
 #### Permisos
-
-**Permitir invocaciones de lambdas**
-
-Una vez desplegado este servicio configurar los permisos de la lambda para que otras lambdas puedan invocarla.
-
-Para esto ir a "Configuration" -> "Permissions" -> "Resource-based policy statements" -> "Add permission" -> Se le asigna nombre al permiso, se agrega la arn **del rol de la lambda que haria la invocacion a esta _(en este caso la arn del permiso de la lambda de authors)_**, y selecciono el permiso al que se le da acceso: **lambda:invokeFunction**.
-
-De esta forma esta lambda puede ser invocada por cualquier lambda que tenga el rol seleccionado (en este caso la lambda de authors)
 
 **Subir archivos a bucket S3**
 
